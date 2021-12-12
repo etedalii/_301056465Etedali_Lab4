@@ -1,9 +1,6 @@
-﻿using System;
+﻿using GrapeCity.Documents.Imaging;
+using System;
 using System.IO;
-using System.Drawing;
-using GrapeCity.Documents.Drawing;
-using GrapeCity.Documents.Text;
-using GrapeCity.Documents.Imaging;
 
 namespace Etedali_ThumbnailImage
 {

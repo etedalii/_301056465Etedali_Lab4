@@ -15,7 +15,7 @@
     "function-timeout"     : 30,
     "function-handler"     : "Etedali_ThumbnailImage::Etedali_ThumbnailImage.Function::FunctionHandler",
     "function-name"        : "Etedali_ThumbnailImage",
-    "function-description" : "Generate Thumbnail",
+    "function-description" : "This is ThumbnailImage",
     "package-type"         : "Zip",
     "function-role"        : "arn:aws:iam::024285884739:role/mohtest",
     "function-architecture" : "x86_64",

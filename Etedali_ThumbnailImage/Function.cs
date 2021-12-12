@@ -13,7 +13,7 @@ namespace Etedali_ThumbnailImage
 {
     public class Function
     {
-        static readonly string DestBucket = "bucket4thumbnail/Thumb";
+        static readonly string DestBucket = "bucket4thumbnail/thumbnail";
 
         IAmazonS3 S3Client { get; set; }
 

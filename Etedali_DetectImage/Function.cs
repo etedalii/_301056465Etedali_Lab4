@@ -25,8 +25,6 @@ namespace Etedali_DetectImage
     {
         AmazonDynamoDBClient client;
         DynamoDBContext _dynamoDbContext;
-        static readonly string DestBucket = "mohetedali/Thumb";
-
         /// <summary>
         /// The default minimum confidence used for detecting labels.
         /// </summary>
@@ -178,53 +176,6 @@ namespace Etedali_DetectImage
                     }
                 });
             }
-
-            //Generate Thumbnail
-            try
-            {
-                var rs = await this.S3Client.GetObjectMetadataAsync(
-                    s3Event.Bucket.Name,
-                    s3Event.Object.Key);
-                if (rs.Headers.ContentType.StartsWith("image/"))
-                {
-                    using (GetObjectResponse response = await S3Client.GetObjectAsync(
-                        s3Event.Bucket.Name,
-                        s3Event.Object.Key))
-                    {
-                        using (Stream responseStream = response.ResponseStream)
-                        {
-                            using (StreamReader reader = new StreamReader(responseStream))
-                            {
-                                using (var memstream = new MemoryStream())
-                                {
-                                    var buffer = new byte[512];
-                                    var bytesRead = default(int);
-                                    while ((bytesRead = reader.BaseStream.Read(buffer, 0, buffer.Length)) > 0)
-                                        memstream.Write(buffer, 0, bytesRead);
-
-                                    var transformedImage = GcImagingOperations.GetConvertedImage(memstream.ToArray());
-                                    PutObjectRequest putRequest = new PutObjectRequest()
-                                    {
-                                        BucketName = DestBucket,
-                                        Key = $"grayscale-{s3Event.Object.Key}",
-                                        ContentType = rs.Headers.ContentType,
-                                        ContentBody = transformedImage
-                                    };
-                                    await S3Client.PutObjectAsync(putRequest);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                context.Logger.LogLine($"Error getting object {s3Event.Object.Key} from bucket {s3Event.Bucket.Name}. Make sure they exist and your bucket is in the same region as this function.");
-                context.Logger.LogLine(e.Message);
-                context.Logger.LogLine(e.StackTrace);
-                throw;
-            }
-
             return;
         }
     }
