@@ -161,6 +161,7 @@ namespace Etedali_DetectImage
                         ObjUrl = $"{record.S3.Bucket.Name}/{record.S3.Object.Key}",
                         FileName = record.S3.Object.Key,
                         Size = record.S3.Object.Size,
+                        InsertDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
                         ImageTag = imageTags
                     };
                     await _dynamoDbContext.SaveAsync(detectImage);

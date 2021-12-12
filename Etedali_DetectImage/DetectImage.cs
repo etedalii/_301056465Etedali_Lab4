@@ -16,6 +16,8 @@ namespace Etedali_DetectImage
 
         public long Size { get; set; }
 
+        public string InsertDate { get; set; }
+
         public List<ImageTag> ImageTag{get; set;}
     }
 }
