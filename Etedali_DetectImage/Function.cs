@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.S3Events;
 
@@ -22,6 +23,9 @@ namespace Etedali_DetectImage
 {
     public class Function
     {
+        AmazonDynamoDBClient client;
+        DynamoDBContext _dynamoDbContext;
+
         /// <summary>
         /// The default minimum confidence used for detecting labels.
         /// </summary>
@@ -52,11 +56,14 @@ namespace Etedali_DetectImage
             this.S3Client = new AmazonS3Client();
             this.RekognitionClient = new AmazonRekognitionClient();
 
+            client = new AmazonDynamoDBClient();
+            _dynamoDbContext = new DynamoDBContext(client);
+
             var environmentMinConfidence = System.Environment.GetEnvironmentVariable(MIN_CONFIDENCE_ENVIRONMENT_VARIABLE_NAME);
-            if(!string.IsNullOrWhiteSpace(environmentMinConfidence))
+            if (!string.IsNullOrWhiteSpace(environmentMinConfidence))
             {
                 float value;
-                if(float.TryParse(environmentMinConfidence, out value))
+                if (float.TryParse(environmentMinConfidence, out value))
                 {
                     this.MinConfidence = value;
                     Console.WriteLine($"Setting minimum confidence to {this.MinConfidence}");
@@ -94,9 +101,9 @@ namespace Etedali_DetectImage
         /// <returns></returns>
         public async Task FunctionHandler(S3Event input, ILambdaContext context)
         {
-            foreach(var record in input.Records)
+            foreach (var record in input.Records)
             {
-                if(!SupportedImageTypes.Contains(Path.GetExtension(record.S3.Object.Key)))
+                if (!SupportedImageTypes.Contains(Path.GetExtension(record.S3.Object.Key)))
                 {
                     Console.WriteLine($"Object {record.S3.Bucket.Name}:{record.S3.Object.Key} is not a supported image type");
                     continue;
@@ -116,10 +123,20 @@ namespace Etedali_DetectImage
                     }
                 });
 
+                List<ImageTag> imageTags = new List<ImageTag>();
                 var tags = new List<Tag>();
-                foreach(var label in detectResponses.Labels)
+                foreach (var label in detectResponses.Labels)
                 {
-                    if(tags.Count < 10)
+                    if (label.Confidence > 90)
+                    {
+                        imageTags.Add(new ImageTag()
+                        {
+                            Confidence = label.Confidence.ToString(),
+                            Name = label.Name,
+                        });
+                    }
+
+                    if (tags.Count < 10)
                     {
                         Console.WriteLine($"\tFound Label {label.Name} with confidence {label.Confidence}");
                         tags.Add(new Tag { Key = label.Name, Value = label.Confidence.ToString() });
@@ -128,6 +145,19 @@ namespace Etedali_DetectImage
                     {
                         Console.WriteLine($"\tSkipped label {label.Name} with confidence {label.Confidence} because the maximum number of tags has been reached");
                     }
+                }
+
+                if(imageTags.Count > 0)
+                {
+                    DetectImage detectImage = new DetectImage
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ObjUrl = $"{record.S3.Bucket.Name}/{record.S3.Object.Key}",
+                        FileName = record.S3.Object.Key,
+                        Size = record.S3.Object.Size,
+                        ImageTag = imageTags
+                    };
+                    await _dynamoDbContext.SaveAsync(detectImage);
                 }
 
                 await this.S3Client.PutObjectTaggingAsync(new PutObjectTaggingRequest

@@ -15,7 +15,7 @@
     "function-timeout"     : 30,
     "function-handler"     : "Etedali_DetectImage::Etedali_DetectImage.Function::FunctionHandler",
     "function-name"        : "Etedali_DetectImage",
-    "function-description" : "test",
+    "function-description" : "Run Detect Image for COMP 306 Lab 4 ",
     "package-type"         : "Zip",
     "function-role"        : "arn:aws:iam::024285884739:role/mohtest",
     "function-architecture" : "x86_64",
