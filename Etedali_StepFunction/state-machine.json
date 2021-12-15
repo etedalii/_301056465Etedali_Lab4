@@ -13,7 +13,7 @@
           "Or": [
             {
               "Variable": "$.key",
-              "StringEquals": "image"
+              "IsString": true
             },
             {
               "Variable": "$.suffix",
