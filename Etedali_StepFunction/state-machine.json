@@ -10,8 +10,28 @@
       "Type": "Choice",
       "Choices": [
         {
-          "Variable": "$.key",
-          "StringEquals": "image",
+          "Or": [
+            {
+              "Variable": "$.key",
+              "StringEquals": "image"
+            },
+            {
+              "Variable": "$.suffix",
+              "StringMatches": "png"
+            },
+            {
+              "Variable": "$.suffix",
+              "StringMatches": "jpg"
+            },
+            {
+              "Variable": "$.suffix",
+              "StringMatches": "jpeg"
+            },
+            {
+              "Variable": "$.suffix",
+              "StringMatches": "jfif"
+            }
+          ],
           "Next": "Parallel"
         }
       ],
